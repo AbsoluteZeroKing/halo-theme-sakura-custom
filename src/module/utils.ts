@@ -71,6 +71,28 @@ export class Utils {
               once: true,
             }
           );
+          // 添加滚动事件监听器
+          let hasAttemptedPlay = false;
+          let allowAutoPlay = sakura.getThemeConfig("additional", "aplayer_autoplay", Boolean)?.valueOf() || false;
+
+          const handleFirstScroll = () => {
+            if (!hasAttemptedPlay) {
+              fixAplayer.play().catch(() => {
+                // 如果播放失败，可能是因为用户还没有与页面交互
+                // 我们会在下一次滚动时再次尝试
+                hasAttemptedPlay = false;
+              });
+              hasAttemptedPlay = true;
+            }
+            // 移除滚动监听器
+            window.removeEventListener('scroll', handleFirstScroll);
+            window.removeEventListener('touchstart', handleFirstScroll);
+          };
+          if (allowAutoPlay) {
+            // 同时监听滚动和触摸事件，以兼容移动设备
+            window.addEventListener('scroll', handleFirstScroll);
+            window.addEventListener('touchstart', handleFirstScroll);
+          }
         });
       })
       .catch((error) => {
